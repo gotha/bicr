@@ -1,6 +1,5 @@
 PROJECT_NAME=bicr
 BUSYBOX_VERSION="1.36.1"
-ROOTFS="/tmp/rootfs"
 
 .PHONY: build test rootfs-empty rootfs clean clean-rootfs
 
@@ -34,9 +33,6 @@ rootfs: rootfs-empty busybox
 
 clean:
 	rm -rf ./build
-
-clean-rootfs:
-	rm -rf ${ROOTFS}
 
 install: build
 	cp ./build/${PROJECT_NAME}-run /usr/local/bin

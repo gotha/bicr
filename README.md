@@ -1,49 +1,57 @@
 # BI Container Runtime
 
-this project started as a fork of [teddyking/ns-process](https://github.com/teddyking/ns-process)
 
-## Creating root filesystem
-
-### Busybox
-
-If you want minimal *nix env with busybox you can run:
+### Creating root filesystem
 
 ```sh
-export MAKEFLAGS=-j`nproc`
-export ROOTFS="/tmp/rootfs"
-make rootfs
+export ROOTFS="$(pwd)/build/rootfs"
+mkdir -pv $ROOTFS
+```
+
+Depending on the flavour of Linux you like, you can use either minimalistic BusyBox environment or Debian, Arch, Fedora. 
+
+Here are some examples:
+
+#### [busybox](https://busybox.net/)
+
+This is the default one.
+
+You need to have installed `gcc`, `g++`, `make` and what Debian calls `build-essentials`
+
+```sh
+export MAKEFLAGS=-j`nproc` && make rootfs
 ```
 
 when the config menu appears go to `Settings -> Build Options` and select `Build static binary`, then exit and save configuration.
-This will download, build and install busybox in specified directory
 
-and chroot if needed:
-```
-sudo chroot "$ROOTFS" /usr/bin/env -i   \
-    HOME=/root                  \
-    TERM="$TERM"                \
-    PS1='(chroot) \u:\w\$ ' \
-    PATH=/usr/bin:/usr/sbin     \
-    /bin/sh --login
-```
-
-### Debootstrap
-
-Alternatively, if you want full Debian environment you can use [debootstrap](https://wiki.debian.org/Debootstrap)
+#### [debootstrap](https://wiki.debian.org/Debootstrap)
 
 ```sh
-export ROOTFS=/tmp/rootfs
-mkdir -pv $ROOTFS
-mkdir -pv /tmp/dpkg.cache
-debootstrap --cache-dir=/tmp/dpkg.cache bookworm $ROOTFS http://deb.debian.org/debian/
+debootstrap bookworm $ROOTFS http://deb.debian.org/debian/
 ```
 
-and chroot if needed:
+#### [pacstrap](https://wiki.archlinux.org/title/Pacstrap) on ArchLinux, Manjaro, etc
 
 ```sh
-sudo mount proc $ROOTFS/proc -t proc
-sudo mount sysfs $ROOTFS/sys -t sysfs
-sudo cp /etc/hosts $ROOTFS/etc/hosts
-sudo cp /proc/mounts $ROOTFS/etc/mtab
-sudo chroot $ROOTFS /bin/bash
+pacstrap -K $ROOTFS base vim
 ```
+
+#### DNF on Fedora, RHEL, etc
+
+```sh
+sudo dnf -y --releasever=39 --installroot=$ROOTFS \
+      --repo=fedora --repo=updates --setopt=install_weak_deps=False install \
+      passwd dnf fedora-release vim-minimal 
+```
+
+#### Chroot in rootfs
+
+If you want to start a shell in the new root filesystem you can:
+
+```sh
+sudo chroot $ROOTFS /bin/sh
+```
+
+### Credits
+
+this project started as a fork of [teddyking/ns-process](https://github.com/teddyking/ns-process)

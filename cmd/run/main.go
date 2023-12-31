@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -32,23 +31,19 @@ func nsInitialisation() {
 		os.Exit(1)
 	}
 
-	if err := syscall.Sethostname([]byte("ns-process")); err != nil {
+	if err := syscall.Sethostname([]byte("bicr")); err != nil {
 		fmt.Printf("Error setting hostname - %s\n", err)
 		os.Exit(1)
 	}
-
-	//if err := waitForNetwork(); err != nil {
-	//	fmt.Printf("Error waiting for network - %s\n", err)
-	//	os.Exit(1)
-	//}
 
 	nsRun()
 }
 
 func nsRun() {
-	fmt.Println("=====================")
-	fmt.Printf("running: %+v \n", os.Args[2:])
-	fmt.Println("=====================")
+	if len(os.Args) < 3 {
+		os.Args = append(os.Args, "/bin/sh")
+	}
+	fmt.Printf("[dbg] running: %+v \n", os.Args[2:])
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 
 	cmd.Stdin = os.Stdin
@@ -59,7 +54,7 @@ func nsRun() {
 
 	if err := cmd.Run(); err != nil {
 		cmdStr := strings.Join(os.Args[2:], " ")
-		fmt.Printf("Error running the %s command: %+v\n", cmdStr, err)
+		fmt.Printf("Error running the '%s' command: %+v\n", cmdStr, err)
 		os.Exit(1)
 	}
 }
@@ -133,13 +128,19 @@ ROOTFS=%s make rootfs
 
 func main() {
 	var rootfsPath string
-	// var rootfsPath, netsetgoPath string
-	flag.StringVar(&rootfsPath, "rootfs", "/tmp/rootfs", "Path to the root filesystem to use")
-	// flag.StringVar(&netsetgoPath, "netsetgo", "/usr/local/bin/netsetgo", "Path to the netsetgo binary")
-	flag.Parse()
+	rootfsPath = os.Getenv("ROOTFS")
+	if rootfsPath == "" {
+		rootfsPath = "./build/rootfs"
+	}
+	rootfsPath, err := filepath.Abs(rootfsPath)
+	if err != nil {
+		fmt.Printf("could not find absolute path of rootfs: %s; err: %s\n", rootfsPath, err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("[dbg] rootfs: %+v \n", rootfsPath)
 
 	exitIfRootfsNotFound(rootfsPath)
-	// exitIfNetsetgoNotFound(netsetgoPath)
 
 	args := []string{"nsInitialisation", rootfsPath}
 	args = append(args, os.Args[1:]...)
@@ -177,15 +178,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// run netsetgo using default args
-	// note that netsetgo must be owned by root with the setuid bit set
-	pid := fmt.Sprintf("%d", cmd.Process.Pid)
-	fmt.Printf("pid: %+v\n", pid)
-	//netsetgoCmd := exec.Command(netsetgoPath, "-pid", pid)
-	//if err := netsetgoCmd.Run(); err != nil {
-	//	fmt.Printf("Error running netsetgo - %s\n", err)
-	//	os.Exit(1)
-	//}
+	fmt.Printf("[dbg] pid: %d\n", cmd.Process.Pid)
 
 	if err := cmd.Wait(); err != nil {
 		fmt.Printf("Error waiting for the reexec.Command - %s\n", err)
