@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/docker/docker/pkg/reexec"
@@ -45,16 +46,20 @@ func nsInitialisation() {
 }
 
 func nsRun() {
-	cmd := exec.Command("/bin/sh")
+	fmt.Println("=====================")
+	fmt.Printf("running: %+v \n", os.Args[2:])
+	fmt.Println("=====================")
+	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	cmd.Env = []string{"PS1=-[ns-process]- # "}
+	// cmd.Env = []string{"PS1=-[ns-process]- # "}
 
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("Error running the /bin/sh command: %+v\n", err)
+		cmdStr := strings.Join(os.Args[2:], " ")
+		fmt.Printf("Error running the %s command: %+v\n", cmdStr, err)
 		os.Exit(1)
 	}
 }
@@ -134,9 +139,11 @@ func main() {
 	flag.Parse()
 
 	exitIfRootfsNotFound(rootfsPath)
-	// //exitIfNetsetgoNotFound(netsetgoPath)
+	// exitIfNetsetgoNotFound(netsetgoPath)
 
-	cmd := reexec.Command("nsInitialisation", rootfsPath)
+	args := []string{"nsInitialisation", rootfsPath}
+	args = append(args, os.Args[1:]...)
+	cmd := reexec.Command(args...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
