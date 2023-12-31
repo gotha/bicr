@@ -155,7 +155,8 @@ func main() {
 			syscall.CLONE_NEWUTS |
 			syscall.CLONE_NEWIPC |
 			syscall.CLONE_NEWPID |
-			syscall.CLONE_NEWNET |
+			// we don't want our own network namespace that why we comment next line
+			// syscall.CLONE_NEWNET |
 			syscall.CLONE_NEWUSER,
 		UidMappings: []syscall.SysProcIDMap{
 			{
