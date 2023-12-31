@@ -1,5 +1,34 @@
 # BI Container Runtime
 
+## Build
+
+```sh
+make build
+```
+
+## Run
+
+!Note: Make sure you have created rootfs first and ROOTFS env variable is set (see below).
+
+Without any parameters bicr-run starts a shell inside the container
+
+```sh
+./build/bicr-run
+```
+
+you can run specific commands from the container:
+
+```sh
+./build/bicr-run /bin/env
+```
+
+You can test with the example web server
+
+```sh
+cp ./build/bicr-httpd-example ./build/rootfs/opt
+PORT=9999 ./build/bicr-run /opt/bicr-httpd-example
+```
+
 
 ### Creating root filesystem
 

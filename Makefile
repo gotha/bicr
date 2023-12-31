@@ -8,6 +8,7 @@ build:
 	mkdir -pv ./build
 	go build -o ./build/${PROJECT_NAME}-run ./cmd/run
 	go build -o ./build/${PROJECT_NAME}-build ./cmd/build
+	go build -o ./build/${PROJECT_NAME}-httpd-example ./cmd/httpd-example
 
 test:
 	@echo ">>> Running Tests..."
