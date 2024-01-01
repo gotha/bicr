@@ -84,3 +84,31 @@ sudo chroot $ROOTFS /bin/sh
 ### Credits
 
 this project started as a fork of [teddyking/ns-process](https://github.com/teddyking/ns-process)
+
+
+## Extending and reusing rootfs with Overlay FS
+
+After you build `$ROOTFS`:
+
+```sh
+export ROOTFS_BASE="$ROOTFS-base"
+export CONTAINERFS="$(pwd)/build/rootfs-container"
+
+mv $ROOTFS $ROOTFS_BASE
+mkdir -pv $ROOTFS $CONTAINERFS
+mount -t tmpfs tmpfs $CONTAINERFS
+mkdir -pv $CONTAINERFS/{up,work}
+
+# note that we are copying the binary inside the 'up' directory
+cp ./build/bicr-httpd-example $CONTAINERFS/up/bin/httpd
+
+mount -t overlay overlay -o lowerdir=$ROOTFS_BASE,upperdir=$CONTAINERFS/up/,workdir=$CONTAINERFS/work/ $ROOTFS
+
+# run container
+./build/bicr-run httpd
+```
+
+Overlay FS applies everything inside `$CONTAINERFS` on top of `$ROOTFS_BASE` and makes accessible via `$ROOTFS` so you can `chroot` in it as per usual.
+Needless to say you can have many `$CONTAINERFS` on top of a single base rootfs.
+
+If you change the base root filesystem or the container FS, you would need to remount so changes can be visible in $ROOTFS.
