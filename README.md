@@ -43,6 +43,8 @@ Here are some examples:
 
 #### [busybox](https://busybox.net/)
 
+##### From source code
+
 This is the default one.
 
 You need to have installed `gcc`, `g++`, `make` and what Debian calls `build-essentials`
@@ -52,6 +54,14 @@ export MAKEFLAGS=-j`nproc` && make rootfs
 ```
 
 when the config menu appears go to `Settings -> Build Options` and select `Build static binary`, then exit and save configuration.
+
+##### Get busybox out of docker image
+
+```sh
+docker create busybox
+CID=$(docker container ls -a --format json | grep busybox | jq -r '.ID')
+docker export $CID | tar -xf - -C $ROOTFS
+```
 
 #### [debootstrap](https://wiki.debian.org/Debootstrap)
 
