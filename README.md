@@ -63,13 +63,29 @@ CID=$(docker container ls -a --format json | grep busybox | jq -r '.ID')
 docker export $CID | tar -xf - -C $ROOTFS
 ```
 
+#### build [alpine](https://www.alpinelinux.org/)
+
+```sh
+pushd /tmp
+    wget http://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/apk-tools-static-2.14.0-r5.apk
+    mkdir -pv /tmp/apk-tools
+    tar -xf apk-tools-static-2.14.0-r5.apk -C /tmp/apk-tools
+popd
+
+sudo /tmp/apk-tools/sbin/apk.static \
+    -X http://dl-cdn.alpinelinux.org/alpine/v3.19/main -U \
+    --arch x86_64 \
+    --allow-untrusted --root $ROOTFS \
+    --initdb add alpine-base
+```
+
 #### [debootstrap](https://wiki.debian.org/Debootstrap)
 
 ```sh
 debootstrap bookworm $ROOTFS http://deb.debian.org/debian/
 ```
 
-#### [pacstrap](https://wiki.archlinux.org/title/Pacstrap) on ArchLinux, Manjaro, etc
+#### [pacstrap](https://wiki.archlinux.org/title/Pacstrap)
 
 ```sh
 pacstrap -K $ROOTFS base vim
