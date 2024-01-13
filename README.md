@@ -76,7 +76,7 @@ sudo /tmp/apk-tools/sbin/apk.static \
     -X http://dl-cdn.alpinelinux.org/alpine/v3.19/main -U \
     --arch x86_64 \
     --allow-untrusted --root $ROOTFS \
-    --initdb add alpine-base
+    --initdb add alpine-base gcompat
 ```
 
 #### [debootstrap](https://wiki.debian.org/Debootstrap)
